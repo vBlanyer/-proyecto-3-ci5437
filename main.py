@@ -19,9 +19,11 @@ def main():
 
       gc.generate_cnf(argv[1])
 
+      # Aplicando SAT Solver Glucose-4.2.1 a archivo DIMACS CNF
+
       print("Aplicando SAT Solver Glucose a archivo DIMACS CNF...")
 
-      # Llamo al SAT Solver con otro proceso
+      # Llamo al SAT Solver
 
       proc = subprocess.Popen(["./glucose/simp/glucose_static", "cfn.txt", "r.txt"])
       proc.wait()
@@ -37,9 +39,6 @@ def main():
                   print("\n\nSolución encontrada")
 
       # Si el resultado es SAT, se utiliza el archivo r.txt para generar un archivo .ics con la solucion
-                
-
-
 
 if __name__ == "__main__":
       main()
