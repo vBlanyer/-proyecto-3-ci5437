@@ -4,28 +4,6 @@
 import json
 import datetime
 
-def asignar_variables(n, days, match_for_day, i, j, k, l):
-      '''
-      Función que asigna un número entero a cada variable del problema, para poder identificarlas
-
-      Parámetros:
-      - n: int. Cantidad de participantes
-      - days: int. Cantidad de días que dura el torneo
-      - match_for_day: int. Cantidad de juegos que se pueden jugar por día
-      - i: int. Participante que juega con j
-      - j: int. Participante que juega con i
-      - k: int. Día en el que juegan i y j
-      - l: int. Hora en la que juegan i y j
-
-      Retorna:
-      - int. Número entero que representa la variable del problema
-
-      '''
-
-      return (n * (days * match_for_day) * (i - 1)) + (days * match_for_day * (j - 1)) + (match_for_day * (k - 1)) + (l - 1) + 1
-l
-
-
 def generate_cnf(json_data):
 
       # Abriendo archivo JSON
@@ -37,7 +15,7 @@ def generate_cnf(json_data):
             print("Error al abrir el archivo JSON")
             return
       
-      # Cargando datos del JSON, no es necesario validar que los datos sean correctos ya que el JSON ya fue validado al ser cargado
+      # Cargando datos del JSON, no es necesario validar que los datos sean correctos ya que el JSON es correcto por el enunciado
 
       tournament_name = data["tournament_name"]
       start_date = data["start_date"] 
@@ -59,19 +37,19 @@ def generate_cnf(json_data):
 
       clauses = []
 
+      # Iteracion que asigna a un diccionario una variable a una combinacion de participantes, dia y hora
+
+      diccionario = {}
+
+      for i in range(1, n + 1): # i es el participante que juega con j
+            for j in range(1, n + 1): # j es el participante que juega con i
+                  if i != j:
+                        for k in range(1, days + 1):
+                              for l in range(1, match_for_day + 1):
+                                    diccionario[(i, j, k, l)] = len(diccionario) + 1
+
       # las clausulas que representan las restricciones del problema son las siguientes:
-
-      # 0. Todo participante debe jugar al menos una vez con cada uno de los otros participantes
-
-      # for i in range(1, n + 1): # i es el participante que juega con j
-      #       for j in range(i + 1, n + 1): # j es el participante que juega con i
-      #             if i != j:
-      #                   for k in range(1, days + 1):
-      #                         for l in range(1, match_for_day + 1):
-      #                               if asignar_variables(n, days, match_for_day, i, j, k, l) != asignar_variables(n, days, match_for_day, j, i, k, l):
-      #                                     print(asignar_variables(n, days, match_for_day, i, j, k, l), asignar_variables(n, days, match_for_day, j, i, k, l))
-      #                               clauses.append([asignar_variables(n, days, match_for_day, i, j, k, l), asignar_variables(n, days, match_for_day, j, i, k, l)])
-
+                                   
       # 1. Restricciones de que todos los participantes deben jugar dos veces con cada uno de los otros participantes, una como "visitantes" y la otra como "locales"
 
       for i in range(1, n + 1): # i es el participante que juega con j
@@ -79,11 +57,10 @@ def generate_cnf(json_data):
                   if i != j:
                         for k in range(1, days + 1):
                               for l in range(1, match_for_day + 1):
-                                    print(f'secuencia {i} {j} {k} {l} valor unico: {asignar_variables(n, days, match_for_day, i, j, k, l)}')
                                     for m in range(1, days + 1):
                                           for o in range(1, match_for_day + 1):
                                                 if k != m or l != o:
-                                                      clauses.append([-asignar_variables(n, days, match_for_day, i, j, k, l), -asignar_variables(n, days, match_for_day, i, j, m, o)])
+                                                      clauses.append([-diccionario[(i, j, k, l)], -diccionario[(j, i, m, o)]])
 
       # 2. Restricciones de que dos juegos no pueden ocurrir al mismo tiempo
 
@@ -94,7 +71,7 @@ def generate_cnf(json_data):
                               for m in range(1, n + 1): # m es el participante que juega con o
                                     for o in range(m + 1, n + 1): # o es el participante que juega con m
                                           if k != m or l != o:
-                                                clauses.append([-asignar_variables(n, days, match_for_day, k, l, i, j), -asignar_variables(n, days, match_for_day, m, o, i, j)])                                                
+                                                clauses.append([-diccionario[(k, l, i, j)], -diccionario[(m, o, i, j)]])                                               
 
       # 3. Restricciones de que un participante puede jugar a lo sumo una vez por día
 
@@ -106,20 +83,17 @@ def generate_cnf(json_data):
                                     for l in range(1, days + 1):
                                           for m in range(1, match_for_day + 1):
                                                 for o in range(m + 1, match_for_day + 1):
-                                                      clauses.append([-asignar_variables(n, days, match_for_day, i, j, l, m), -asignar_variables(n, days, match_for_day, i, k, l, o)])
+                                                      clauses.append([-diccionario[(i, j, l, m)], -diccionario[(i, k, l, o)]])
 
       # 4. Restricciones de que un participante no puede jugar de "visitante" en dos días consecutivos, ni de "local" dos días seguidos
 
-      # for i in range(1, n + 1): # i es el participante que juega con j
-      #       for j in range(i + 1, n + 1): # j es el participante que juega con i
-      #             if i != j:
-      #                   for k in range(1, days):
-      #                         for l in range(1, match_for_day + 1):
-      #                               for m in range(1, match_for_day + 1):
-      #                                     clauses.append([-asignar_variables(n, days, match_for_day, i, j, k, l), -asignar_variables(n, days, match_for_day, i, j, k + 1, m)])
-      #                                     clauses.append([-asignar_variables(n, days, match_for_day, j, i, k, l), -asignar_variables(n, days, match_for_day, j, i, k + 1, m)])
-
-                         
+      for i in range(1, n + 1): # i es el participante
+            for k in range(1, days): # días consecutivos (k, k+1)
+                  for j in range(1, n + 1): # j es el otro participante
+                        if i != j:
+                              for l in range(1, match_for_day + 1):
+                                    clauses.append([-diccionario[(i, j, k, l)], -diccionario[(i, j, k + 1, l)]])
+                                    clauses.append([-diccionario[(j, i, k, l)], -diccionario[(j, i, k + 1, l)]])
 
       # 5. Restricciones de que todos los juegos deben empezar en horas "en punto". Restriccion implicita al declarar match_for_day
 
@@ -137,3 +111,5 @@ def generate_cnf(json_data):
                   file.write(' '.join(map(str, clause)) + ' 0\n')
 
       print("Archivo .txt generado exitosamente")
+
+      return diccionario

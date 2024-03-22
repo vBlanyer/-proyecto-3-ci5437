@@ -4,7 +4,6 @@ from sys import argv
 import sys, json, datetime, os, subprocess, threading, time
 import json
 import generate_cnf as gc
-from generate_cnf import asignar_variables as av
 from ics import Calendar, Event
 
 def main():
@@ -17,7 +16,7 @@ def main():
       
       print("Generando archivo DIMACS CNF...")
 
-      gc.generate_cnf(argv[1])
+      diccionario = gc.generate_cnf(argv[1])
 
       # Aplicando SAT Solver Glucose-4.2.1 a archivo DIMACS CNF
 
@@ -33,12 +32,32 @@ def main():
       with open("r.txt", "r") as file:
             result = file.read().strip()
             if result == "UNSAT":
-                  print("\n\nNo hay solución")
                   exit(0)
-            else:
-                  print("\n\nSolución encontrada")
-
+            
       # Si el resultado es SAT, se utiliza el archivo r.txt para generar un archivo .ics con la solucion
 
+      with open("r.txt", "r") as file:
+            result = list(map(int, file.read().strip().split()))
+            
+      # Cargando datos del JSON
+
+      try:
+            with open(argv[1], 'r') as file:
+                  data = json.load(file)
+      except:
+            print("Error al abrir el archivo JSON")
+            return
+      
+      # Cargando datos del JSON, no es necesario validar que los datos sean correctos ya que el JSON es correcto por el enunciado
+
+      tournament_name = data["tournament_name"]
+      start_date = data["start_date"] 
+      end_date = data["end_date"]
+      start_time = data["start_time"] 
+      end_time = data["end_time"] 
+      participants = data["participants"] 
+
+      # Creo el archivo .ics
+            
 if __name__ == "__main__":
       main()
