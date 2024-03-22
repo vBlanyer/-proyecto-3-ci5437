@@ -110,14 +110,14 @@ def generate_cnf(json_data):
 
       # 4. Restricciones de que un participante no puede jugar de "visitante" en dos días consecutivos, ni de "local" dos días seguidos
 
-      # for i in range(1, n + 1): # i es el participante que juega con j
-      #       for j in range(i + 1, n + 1): # j es el participante que juega con i
-      #             if i != j:
-      #                   for k in range(1, days):
-      #                         for l in range(1, match_for_day + 1):
-      #                               for m in range(1, match_for_day + 1):
-      #                                     clauses.append([-asignar_variables(n, days, match_for_day, i, j, k, l), -asignar_variables(n, days, match_for_day, i, j, k + 1, m)])
-      #                                     clauses.append([-asignar_variables(n, days, match_for_day, j, i, k, l), -asignar_variables(n, days, match_for_day, j, i, k + 1, m)])
+      for i in range(1, n + 1): # i es el participante
+            for k in range(1, days): # días consecutivos (k, k+1)
+                  for j in range(1, n + 1): # j es el otro participante
+                        if i != j:
+                              for l in range(1, match_for_day + 1):
+                                    clauses.append([-asignar_variables(n, days, match_for_day, j, i, k, l), -asignar_variables(n, days, match_for_day, j, i, k + 1, l)])
+                                    clauses.append([-asignar_variables(n, days, match_for_day, i, j, k, l), -asignar_variables(n, days, match_for_day, i, j, k + 1, l)])
+            
 
                          
 
