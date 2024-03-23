@@ -49,7 +49,14 @@ def generate_cnf(json_data):
                                     diccionario[(i, j, k, l)] = len(diccionario) + 1
 
       # las clausulas que representan las restricciones del problema son las siguientes:
-                                   
+
+      # 0. Restricciones de que todos los participantes deben jugar al menos una vez con cada uno de los otros participantes
+
+      for i in range(1, n + 1): # i es el participante que juega con j
+            for j in range(1, n + 1): # j es el participante que juega con i
+                  if i != j:
+                        clauses.append([diccionario[(i, j, k, l)] for k in range(1, days + 1) for l in range(1, match_for_day + 1)])
+
       # 1. Restricciones de que todos los participantes deben jugar dos veces con cada uno de los otros participantes, una como "visitantes" y la otra como "locales"
 
       for i in range(1, n + 1): # i es el participante que juega con j
@@ -61,7 +68,7 @@ def generate_cnf(json_data):
                                           for o in range(1, match_for_day + 1):
                                                 if k != m or l != o:
                                                       clauses.append([-diccionario[(i, j, k, l)], -diccionario[(j, i, m, o)]])
-
+      
       # 2. Restricciones de que dos juegos no pueden ocurrir al mismo tiempo
 
       for i in range(1, days + 1):
@@ -105,11 +112,11 @@ def generate_cnf(json_data):
 
       # Creamos el archivo .txt con el formato DIMACS CNF
 
-      with open('cfn.txt', 'w') as file:
-            file.write(f'p cnf {total_variables} {len(clauses)}\n')
+      with open("cfn.txt", "w") as file:
+            file.write(f"p cnf {total_variables} {len(clauses)}\n")
             for clause in clauses:
-                  file.write(' '.join(map(str, clause)) + ' 0\n')
-
+                  file.write(" ".join(map(str, clause)) + " 0\n")
+  
       print("Archivo .txt generado exitosamente")
 
       return diccionario

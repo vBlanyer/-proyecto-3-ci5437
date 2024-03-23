@@ -33,7 +33,7 @@ def main():
             result = file.read().strip()
             if result == "UNSAT":
                   exit(0)
-            
+
       # Si el resultado es SAT, se utiliza el archivo r.txt para generar un archivo .ics con la solucion
 
       with open("r.txt", "r") as file:
@@ -48,7 +48,7 @@ def main():
             print("Error al abrir el archivo JSON")
             return
       
-      # Cargando datos del JSON, no es necesario validar que los datos sean correctos ya que el JSON es correcto por el enunciado
+      # Cargando datos del JSON, no es necesario validar que los datos sean correctos ya que el JSON dado el enunciado
 
       tournament_name = data["tournament_name"]
       start_date = data["start_date"] 
@@ -58,6 +58,6 @@ def main():
       participants = data["participants"] 
 
       # Creo el archivo .ics
-            
+      
 if __name__ == "__main__":
       main()
