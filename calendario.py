@@ -28,7 +28,7 @@ def crear_calendario(partidos, json_data):
     cal = Calendar()
 
     for var in variables_solucion:
-        match_info = decode_match(var, n, days, matches_per_day, torneo_info['start_date'], torneo_info['start_time'])
+        match_info = decode_match(var, n, days, matches_per_day, torneo_info['start_date'], torneo_info['start_time'], torneo_info['participants'])
         evento = Event()
         evento.name = f"{match_info['local']} vs {match_info['visitante']}"
         evento.begin = match_info['fecha_hora_inicio']
