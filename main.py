@@ -1,12 +1,10 @@
 # Traduce archivo json a formato DIMACS CNF
 
 from sys import argv
-from datetime import datetime
-import subprocess
-import generate_cnf as gc
-from calendario import crear_calendario
-from decode_match import decode_match
+import sys, json, datetime, os, subprocess, threading, time
 import json
+import generate_cnf as gc
+from ics import Calendar, Event
 
 def main():
 
@@ -18,7 +16,7 @@ def main():
       
       print("Generando archivo DIMACS CNF...")
 
-      gc.generate_cnf(argv[1])
+      diccionario = gc.generate_cnf(argv[1])
 
       # Aplicando SAT Solver Glucose-4.2.1 a archivo DIMACS CNF
 
@@ -36,39 +34,55 @@ def main():
             if result == "UNSAT":
                   exit(0)
 
-      input_file = argv[1]
+      # Cargando datos del JSON
+
+      try:
+            with open(argv[1], 'r') as file:
+                  data = json.load(file)
+      except:
+            print("Error al abrir el archivo JSON")
+            return
       
-      # Cargar la información del torneo desde el archivo JSON
-      with open(input_file, 'r') as file:
-            torneo_info = json.load(file)
+      # Cargando datos del JSON, no es necesario validar que los datos sean correctos ya que el JSON dado el enunciado
+
+      tournament_name = data["tournament_name"]
+      start_date = data["start_date"] 
+      end_date = data["end_date"]
+      start_time = data["start_time"] 
+      end_time = data["end_time"] 
+      participants = data["participants"] 
       
-      print(torneo_info)
+      # Cargando r.txt
 
-      # Definición de las variables basadas en la información del torneo
-      n = len(torneo_info['participants'])
-      start_date = torneo_info['start_date']
-      start_time = torneo_info['start_time']
-      end_date = torneo_info['end_date']
-      end_time = torneo_info['end_time']
+      with open("r.txt", "r") as file:
+            result = list(map(int, file.read().strip().split()))
 
-      days = (datetime.strptime(end_date, '%Y-%m-%d') - datetime.strptime(start_date, '%Y-%m-%d')).days + 1
-      matches_per_day = (datetime.strptime(end_time, '%H:%M:%S') - datetime.strptime(start_time, '%H:%M:%S')).seconds // (3600 * 2)
+      # Creo el archivo .ics
 
-      #  interpretar la salida del SAT solver
-      partidos = []
-      with open('r.txt', 'r') as sol_file:
-            for line in sol_file.readlines():
-                  if line.strip() and line.strip() != "0":  # Ignora líneas vacías y la terminación de las cláusulas
-                        vars = line.strip().split()
-                        for var in vars:
-                              if var != "0":  # Ignora el término de fin de cláusula
-                                    var_int = int(var)
-                                    if var_int > 0:  # Consideramos solo variables positivas como parte de la solución
-                                          partido = decode_match(var_int, n, days, matches_per_day, start_date, start_time, torneo_info['participants'])
-                                          partidos.append(partido)
+      c = Calendar()
 
-    # Crear el calendario con los partidos decodificados
-      crear_calendario(partidos, argv[1])
+      for i in range(0, len(diccionario)):
+            if result[i] > 0:
+                  # Obtengo los valores de i, j, k, l
+                  for key, value in diccionario.items():
+                        if value == i:
+                              i, j, k, l = key
+                              break
+                  # Creo el evento
+                  e = Event()
+                  e.name = f"{participants[i - 1]} vs {participants[j - 1]}"
+                  # Para el inicio y fin del evento, tomo la fecha y hora de inicio del torneo y le sumo los dias y horas correspondientes, con ayuda de k y l, que son los dias y horas de los partidos
+                  e.begin = f"{start_date}T{start_time}"
+                  e.begin = (datetime.datetime.strptime(e.begin, '%Y-%m-%d%H:%M:%S') + datetime.timedelta(days=k - 1, hours=(l - 1) * 2)).strftime('%Y-%m-%dT%H:%M:%S')
+                  e.end = (datetime.datetime.strptime(e.begin, '%Y-%m-%dT%H:%M:%S') + datetime.timedelta(hours=2)).strftime('%Y-%m-%dT%H:%M:%S')
+                  c.events.add(e)
 
+
+                  
+      # Guardo el archivo .ics
+
+      with open("tournament.ics", "w") as file:
+            file.writelines(c)
+      
 if __name__ == "__main__":
-    main()
+      main()
