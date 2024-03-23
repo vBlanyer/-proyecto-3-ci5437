@@ -1,10 +1,13 @@
 # Traduce archivo json a formato DIMACS CNF
 
 from sys import argv
-import sys, json, datetime, os, subprocess, threading, time
-import json
+from datetime import datetime
+import subprocess
 import generate_cnf as gc
-from ics import Calendar, Event
+from generate_cnf import asignar_variables as av
+from calendario import crear_calendario
+from decode_match import decode_match
+import json
 
 def main():
 
@@ -16,7 +19,7 @@ def main():
       
       print("Generando archivo DIMACS CNF...")
 
-      diccionario = gc.generate_cnf(argv[1])
+      gc.generate_cnf(argv[1])
 
       # Aplicando SAT Solver Glucose-4.2.1 a archivo DIMACS CNF
 
@@ -24,7 +27,7 @@ def main():
 
       # Llamo al SAT Solver
 
-      proc = subprocess.Popen(["./glucose/simp/glucose_static", "cfn.txt", "r.txt"])
+      proc = subprocess.Popen(["./glucose/simp/glucose_static", "cnf.txt", "r.txt"])
       proc.wait()
 
       # El resultado del SAT Solver se guarda en r.txt. Si el resultado es SAT, se imprime la solucion, si es UNSAT, se imprime que no hay solucion
@@ -32,32 +35,44 @@ def main():
       with open("r.txt", "r") as file:
             result = file.read().strip()
             if result == "UNSAT":
+                  print("\n\nNo hay solución")
                   exit(0)
+            else:
+                  print("\n\nSolución encontrada")
 
-      # Si el resultado es SAT, se utiliza el archivo r.txt para generar un archivo .ics con la solucion
-
-      with open("r.txt", "r") as file:
-            result = list(map(int, file.read().strip().split()))
-            
-      # Cargando datos del JSON
-
-      try:
-            with open(argv[1], 'r') as file:
-                  data = json.load(file)
-      except:
-            print("Error al abrir el archivo JSON")
-            return
+      input_file = argv[1]
       
-      # Cargando datos del JSON, no es necesario validar que los datos sean correctos ya que el JSON dado el enunciado
-
-      tournament_name = data["tournament_name"]
-      start_date = data["start_date"] 
-      end_date = data["end_date"]
-      start_time = data["start_time"] 
-      end_time = data["end_time"] 
-      participants = data["participants"] 
-
-      # Creo el archivo .ics
+      # Cargar la información del torneo desde el archivo JSON
+      with open(input_file, 'r') as file:
+            torneo_info = json.load(file)
       
+      print(torneo_info)
+
+      # Definición de las variables basadas en la información del torneo
+      n = len(torneo_info['participants'])
+      start_date = torneo_info['start_date']
+      start_time = torneo_info['start_time']
+      end_date = torneo_info['end_date']
+      end_time = torneo_info['end_time']
+
+      days = (datetime.strptime(end_date, '%Y-%m-%d') - datetime.strptime(start_date, '%Y-%m-%d')).days + 1
+      matches_per_day = (datetime.strptime(end_time, '%H:%M:%S') - datetime.strptime(start_time, '%H:%M:%S')).seconds // (3600 * 2)
+
+      #  interpretar la salida del SAT solver
+      partidos = []
+      with open('r.txt', 'r') as sol_file:
+            for line in sol_file.readlines():
+                  if line.strip() and line.strip() != "0":  # Ignora líneas vacías y la terminación de las cláusulas
+                        vars = line.strip().split()
+                        for var in vars:
+                              if var != "0":  # Ignora el término de fin de cláusula
+                                    var_int = int(var)
+                                    if var_int > 0:  # Consideramos solo variables positivas como parte de la solución
+                                          partido = decode_match(var_int, n, days, matches_per_day, start_date, start_time)
+                                          partidos.append(partido)
+
+    # Crear el calendario con los partidos decodificados
+      crear_calendario(partidos)
+
 if __name__ == "__main__":
-      main()
+    main()
