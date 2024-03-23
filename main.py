@@ -72,8 +72,10 @@ def main():
                   e = Event()
                   e.name = f"{participants[i - 1]} vs {participants[j - 1]}"
                   date = datetime.datetime.strptime(start_date, '%Y-%m-%d') + datetime.timedelta(days=k - 1)
-                  time_initial = datetime.datetime.strptime(start_time, '%H:%M:%S') + datetime.timedelta(hours=l * 2 - 2)
-                  time_final = datetime.datetime.strptime(end_time, '%H:%M:%S') + datetime.timedelta(hours=l * 2)
+                  time_initial = datetime.datetime.strptime(start_time, '%H:%M:%S') + datetime.timedelta(hours=(l-1) * 2)
+                  time_final = datetime.datetime.strptime(start_time, '%H:%M:%S') + datetime.timedelta(hours=(l-1) * 2 + 2)
+                  # Independientemente de como se haga en el candelario de windows sale mal el intervalo de horas
+                  # print(f'{participants[i -1]} vs {participants[j - 1]} - {date.strftime("%Y-%m-%d")} - {time_initial.strftime("%H:%M:%S")} - {time_final.strftime("%H:%M:%S")}')
                   e.begin = f"{date.strftime('%Y-%m-%d')} {time_initial.strftime('%H:%M:%S')}"
                   e.end = f"{date.strftime('%Y-%m-%d')} {time_final.strftime('%H:%M:%S')}"
                   c.events.add(e)
