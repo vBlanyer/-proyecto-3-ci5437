@@ -28,9 +28,6 @@ def decode_match(var, n, days, matches_per_day, start_date_str, start_time_str, 
     # Formatea la fecha y hora del partido
     match_datetime = datetime.combine(match_date, match_start_time.time()).strftime('%Y-%m-%d %H:%M:%S')
 
-    print(i)
-    print(j)
-
     return {
         'local': local,
         'visitante': visitante,
