@@ -71,10 +71,11 @@ def main():
                   # Creo el evento
                   e = Event()
                   e.name = f"{participants[i - 1]} vs {participants[j - 1]}"
-                  # Para el inicio y fin del evento, tomo la fecha y hora de inicio del torneo y le sumo los dias y horas correspondientes, con ayuda de k y l, que son los dias y horas de los partidos
-                  e.begin = f"{start_date}T{start_time}"
-                  e.begin = (datetime.datetime.strptime(e.begin, '%Y-%m-%d%H:%M:%S') + datetime.timedelta(days=k - 1, hours=(l - 1) * 2)).strftime('%Y-%m-%dT%H:%M:%S')
-                  e.end = (datetime.datetime.strptime(e.begin, '%Y-%m-%dT%H:%M:%S') + datetime.timedelta(hours=2)).strftime('%Y-%m-%dT%H:%M:%S')
+                  date = datetime.datetime.strptime(start_date, '%Y-%m-%d') + datetime.timedelta(days=k - 1)
+                  time_initial = datetime.datetime.strptime(start_time, '%H:%M:%S') + datetime.timedelta(hours=l * 2 - 2)
+                  time_final = datetime.datetime.strptime(end_time, '%H:%M:%S') + datetime.timedelta(hours=l * 2)
+                  e.begin = f"{date.strftime('%Y-%m-%d')} {time_initial.strftime('%H:%M:%S')}"
+                  e.end = f"{date.strftime('%Y-%m-%d')} {time_final.strftime('%H:%M:%S')}"
                   c.events.add(e)
 
 
