@@ -4,7 +4,6 @@ from sys import argv
 from datetime import datetime
 import subprocess
 import generate_cnf as gc
-from generate_cnf import asignar_variables as av
 from calendario import crear_calendario
 from decode_match import decode_match
 import json
@@ -27,7 +26,7 @@ def main():
 
       # Llamo al SAT Solver
 
-      proc = subprocess.Popen(["./glucose/simp/glucose_static", "cnf.txt", "r.txt"])
+      proc = subprocess.Popen(["./glucose/simp/glucose_static", "cfn.txt", "r.txt"])
       proc.wait()
 
       # El resultado del SAT Solver se guarda en r.txt. Si el resultado es SAT, se imprime la solucion, si es UNSAT, se imprime que no hay solucion
@@ -35,10 +34,7 @@ def main():
       with open("r.txt", "r") as file:
             result = file.read().strip()
             if result == "UNSAT":
-                  print("\n\nNo hay solución")
                   exit(0)
-            else:
-                  print("\n\nSolución encontrada")
 
       input_file = argv[1]
       
@@ -72,7 +68,7 @@ def main():
                                           partidos.append(partido)
 
     # Crear el calendario con los partidos decodificados
-      crear_calendario(partidos)
+      crear_calendario(partidos, argv[1])
 
 if __name__ == "__main__":
     main()

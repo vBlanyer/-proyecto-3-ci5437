@@ -3,7 +3,7 @@ from decode_match import decode_match
 import json
 from datetime import datetime, timedelta
 
-def crear_calendario(partidos):    
+def crear_calendario(partidos, json_data):    
 
     variables_solucion = []
 
@@ -18,7 +18,7 @@ def crear_calendario(partidos):
                     variables_solucion.append(int(var))
 
     # Datos del torneo, obtenidos del archivo JSON
-    with open('torneo.json', 'r') as file:
+    with open(json_data, 'r') as file:
         torneo_info = json.load(file)
 
     n = len(torneo_info['participants'])  # Número de participantes
