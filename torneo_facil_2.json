@@ -1,0 +1,9 @@
+{
+  "tournament_name": "Torneo_facil_2",
+  "start_date": "2021-05-03",
+  "end_date": "2021-05-15",
+  "start_time": "08:00:00",
+  "end_time": "18:00:00",
+  "participants": ["pedro", "juan", "luis", "maria", "ana", "laura", "carlos", "jose", "javier", "pablo", "david", "raul", "alberto"]
+}
+ 
