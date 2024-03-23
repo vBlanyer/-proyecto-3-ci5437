@@ -64,7 +64,7 @@ def main():
                               if var != "0":  # Ignora el término de fin de cláusula
                                     var_int = int(var)
                                     if var_int > 0:  # Consideramos solo variables positivas como parte de la solución
-                                          partido = decode_match(var_int, n, days, matches_per_day, start_date, start_time)
+                                          partido = decode_match(var_int, n, days, matches_per_day, start_date, start_time, torneo_info['participants'])
                                           partidos.append(partido)
 
     # Crear el calendario con los partidos decodificados
